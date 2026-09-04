@@ -1,16 +1,14 @@
 import { PrismaClient } from "@prisma/client";
-import { createHash } from "node:crypto";
+import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // NOTE: plain hash for a quick seed test. We'll replace with proper
-  // password hashing (bcrypt) when we build real Auth later.
-  const passwordHash = createHash("sha256").update("admin123").digest("hex");
+  const passwordHash = await hash("admin123", 10);
 
   const user = await prisma.user.upsert({
     where: { email: "admin@campusverse.dev" },
-    update: {},
+    update: { passwordHash },
     create: {
       email: "admin@campusverse.dev",
       name: "System Admin",
@@ -22,7 +20,7 @@ async function main() {
     },
   });
 
-  console.log("Created user:", user.email, "role:", user.role);
+  console.log("Seeded user:", user.email, "role:", user.role);
 }
 
 main()
