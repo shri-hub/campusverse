@@ -1,61 +1,129 @@
+import { redirect } from "next/navigation";
+import Link from "next/link";
 import { auth, signOut } from "@/auth";
+
+type Role = "SUPER_ADMIN" | "ADMIN" | "FACULTY" | "STUDENT" | "STAFF";
+
+interface NavItem {
+  label: string;
+  href: string;
+}
+
+const adminNav: NavItem[] = [
+  { label: "Users", href: "/users" },
+  { label: "Notices", href: "/notices" },
+  { label: "Reports", href: "/reports" },
+];
+
+const facultyNav: NavItem[] = [
+  { label: "My Timetable", href: "/timetable" },
+  { label: "Attendance", href: "/attendance" },
+  { label: "Assignments", href: "/assignments" },
+  { label: "Notices", href: "/notices" },
+];
+
+const studentNav: NavItem[] = [
+  { label: "Timetable", href: "/timetable" },
+  { label: "Assignments", href: "/assignments" },
+  { label: "Results", href: "/results" },
+  { label: "Notices", href: "/notices" },
+];
+
+function getNav(role: Role): NavItem[] {
+  switch (role) {
+    case "SUPER_ADMIN":
+    case "ADMIN":
+      return adminNav;
+    case "FACULTY":
+      return facultyNav;
+    case "STAFF":
+      return facultyNav;
+    case "STUDENT":
+      return studentNav;
+    default:
+      return [];
+  }
+}
+
+function roleTitle(role: Role): string {
+  switch (role) {
+    case "SUPER_ADMIN":
+    case "ADMIN":
+      return "Administrator";
+    case "FACULTY":
+      return "Faculty";
+    case "STUDENT":
+      return "Student";
+    case "STAFF":
+      return "Staff";
+    default:
+      return "Member";
+  }
+}
 
 export default async function DashboardPage() {
   const session = await auth();
 
   if (!session?.user) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
-        <div className="text-center">
-          <h1 className="text-xl text-white">You are not signed in.</h1>
-          <a href="/login" className="mt-4 inline-block rounded-lg bg-teal-500 px-4 py-2 font-semibold text-slate-950">
-            Go to Login
-          </a>
-        </div>
-      </main>
-    );
+    redirect("/login");
   }
 
+  const role = (session.user as any).role as Role;
+  const name = session.user.name as string;
+  const nav = getNav(role);
+  const title = roleTitle(role);
+
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
-      <div className="mx-auto max-w-2xl">
+    <div className="min-h-screen bg-slate-950 text-white">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+        <span className="text-xl font-bold text-teal-400">CampusVerse</span>
+        <span className="text-sm text-slate-400">{title} workspace</span>
+      </div>
+
+      <main className="mx-auto max-w-6xl px-6 py-6">
         <div className="rounded-2xl border border-slate-700 bg-slate-900 p-8">
-          <h1 className="text-2xl font-bold">Welcome to CampusVerse</h1>
-          <p className="mt-1 text-slate-400">You are signed in.</p>
+          <h1 className="text-2xl font-bold">
+            Welcome back, {name}
+          </h1>
+          <p className="mt-1 text-slate-400">
+            You are signed in as {title} ({role}).
+          </p>
 
-          <dl className="mt-6 grid grid-cols-1 gap-3 text-sm">
-            <div className="rounded-lg bg-slate-800 p-4">
-              <dt className="text-slate-400">Name</dt>
-              <dd className="text-lg font-semibold">{session.user.name}</dd>
-            </div>
-            <div className="rounded-lg bg-slate-800 p-4">
-              <dt className="text-slate-400">Email</dt>
-              <dd className="text-lg font-semibold">{session.user.email}</dd>
-            </div>
-            <div className="rounded-lg bg-slate-800 p-4">
-              <dt className="text-slate-400">Role</dt>
-              <dd className="text-lg font-semibold text-teal-400">
-                {(session.user as any).role}
-              </dd>
-            </div>
-          </dl>
+          <nav className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {nav.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-xl border border-slate-700 bg-slate-800 p-4 text-sm font-medium hover:border-teal-400 hover:bg-slate-700"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
 
+          {nav.length === 0 && (
+            <p className="mt-6 text-slate-500">
+              No modules available for this role yet.
+            </p>
+          )}
+        </div>
+
+        <div className="mt-6 flex justify-end">
           <form
             action={async () => {
               "use server";
-              await signOut({ redirectTo: "/" });
+              await signOut({ redirectTo: "/login" });
             }}
-            className="mt-6"
           >
             <button
               type="submit"
-              className="rounded-lg bg-red-600 px-4 py-2 font-semibold hover:bg-red-500"
+              className="rounded-lg border border-red-600 px-4 py-2 text-sm text-red-400 hover:bg-red-600 hover:text-white"
             >
               Sign out
             </button>
           </form>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
