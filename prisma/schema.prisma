@@ -15,6 +15,12 @@ enum Role {
   STAFF
 }
 
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LEAVE
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -25,8 +31,10 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  profile      Profile?
-  notices      Notice[]
+  profile        Profile?
+  notices        Notice[]
+  attendance     AttendanceRecord[]
+  markedRecords  AttendanceRecord[] @relation("MarkedBy")
 }
 
 model Profile {
@@ -54,4 +62,22 @@ model Notice {
   author    User     @relation(fields: [authorId], references: [id])
 
   @@index([authorId])
+}
+
+model AttendanceRecord {
+  id          String           @id @default(cuid())
+  studentId   String
+  subject     String
+  date        DateTime         @db.Date
+  status      AttendanceStatus @default(PRESENT)
+  markedById  String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  student     User     @relation(fields: [studentId], references: [id])
+  markedBy    User?    @relation("MarkedBy", fields: [markedById], references: [id])
+
+  @@unique([studentId, subject, date])
+  @@index([studentId])
+  @@index([subject])
 }
