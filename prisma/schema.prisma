@@ -21,6 +21,15 @@ enum AttendanceStatus {
   LEAVE
 }
 
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -31,11 +40,12 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  profile        Profile?
-  notices        Notice[]
-  attendance     AttendanceRecord[]
-  markedRecords  AttendanceRecord[] @relation("MarkedBy")
-  assignments    Assignment[] @relation("CreatedAssignments")
+  profile       Profile?
+  notices       Notice[]
+  attendance    AttendanceRecord[]
+  markedRecords AttendanceRecord[] @relation("MarkedBy")
+  assignments   Assignment[] @relation("CreatedAssignments")
+  teachingSlots TimeSlot[] @relation("FacultySlots")
 }
 
 model Profile {
@@ -96,4 +106,21 @@ model Assignment {
   createdBy   User     @relation("CreatedAssignments", fields: [createdById], references: [id])
 
   @@index([createdById])
+}
+
+model TimeSlot {
+  id         String    @id @default(cuid())
+  day        DayOfWeek
+  startTime  String
+  endTime    String
+  subject    String
+  room       String?
+  facultyId  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  faculty    User?     @relation("FacultySlots", fields: [facultyId], references: [id])
+
+  @@index([day])
+  @@index([facultyId])
 }
