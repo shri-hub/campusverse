@@ -35,6 +35,7 @@ model User {
   notices        Notice[]
   attendance     AttendanceRecord[]
   markedRecords  AttendanceRecord[] @relation("MarkedBy")
+  assignments    Assignment[] @relation("CreatedAssignments")
 }
 
 model Profile {
@@ -80,4 +81,19 @@ model AttendanceRecord {
   @@unique([studentId, subject, date])
   @@index([studentId])
   @@index([subject])
+}
+
+model Assignment {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  subject     String
+  dueDate     DateTime
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy   User     @relation("CreatedAssignments", fields: [createdById], references: [id])
+
+  @@index([createdById])
 }

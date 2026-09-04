@@ -12,21 +12,25 @@ interface NavItem {
 const adminNav: NavItem[] = [
   { label: "Users", href: "/users" },
   { label: "Notices", href: "/notices" },
-  { label: "Reports", href: "/reports" },
+  { label: "Assignments", href: "/assignments" },
+  { label: "Attendance", href: "/attendance" },
 ];
 
 const facultyNav: NavItem[] = [
-  { label: "My Timetable", href: "/timetable" },
-  { label: "Attendance", href: "/attendance" },
-  { label: "Assignments", href: "/assignments" },
   { label: "Notices", href: "/notices" },
+  { label: "Assignments", href: "/assignments" },
+  { label: "Attendance", href: "/attendance" },
+];
+
+const staffNav: NavItem[] = [
+  { label: "Notices", href: "/notices" },
+  { label: "Attendance", href: "/attendance" },
 ];
 
 const studentNav: NavItem[] = [
-  { label: "Timetable", href: "/timetable" },
-  { label: "Assignments", href: "/assignments" },
-  { label: "Results", href: "/results" },
   { label: "Notices", href: "/notices" },
+  { label: "Assignments", href: "/assignments" },
+  { label: "Attendance", href: "/attendance" },
 ];
 
 function getNav(role: Role): NavItem[] {
@@ -37,7 +41,7 @@ function getNav(role: Role): NavItem[] {
     case "FACULTY":
       return facultyNav;
     case "STAFF":
-      return facultyNav;
+      return staffNav;
     case "STUDENT":
       return studentNav;
     default:
