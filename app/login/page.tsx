@@ -2,10 +2,13 @@
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -28,7 +31,7 @@ export default function LoginPage() {
       setError("Invalid email or password.");
       setLoading(false);
     } else {
-      router.push("/dashboard");
+      router.push(callbackUrl);
       router.refresh();
     }
   }
@@ -48,7 +51,7 @@ export default function LoginPage() {
               type="email"
               required
               className="mt-1 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-white focus:border-teal-400 focus:outline-none"
-              placeholder="admin@campusverse.dev"
+              placeholder="you@campusverse.dev"
             />
           </div>
 
@@ -78,9 +81,17 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-4 text-center text-xs text-slate-500">
-          Test login: admin@campusverse.dev / admin123
+          Test admin: admin@campusverse.dev / admin123
         </p>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
